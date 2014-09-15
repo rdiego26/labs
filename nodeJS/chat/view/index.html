@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <title>Exemplo de chat</title>
+        <script src="https://cdn.socket.io/socket.io-1.1.0.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+        <script src="../js/Constants.js"></script>
+        <script>
+            var socket = io.connect('http://localhost:8080');
+
+            socket.on('connect', function(){
+                socket.emit(Constants.chat.ADD_USER, prompt("Entre com um nickname!") || 'An&ocirc;nimo'  );
+            });
+
+            //TODO formatar a data para um formato mais amigável
+            socket.on(Constants.chat.UPDATE_CHAT, function (username, data) {
+                $('#conversation').append('<b> ' + new Date() + ' - ' +username + ':</b> ' + data + '<br>');
+            });
+
+            socket.on(Constants.chat.UPDATE_USERS, function(data) {
+                $('#users').empty();
+                $.each(data, function(key, value) {
+                    $('#users').append('<div>' + key + '</div>');
+                });
+            });
+
+            $(function(){
+                $('#datasend').click( function() {
+                    var message = $('#data').val();
+                    $('#data').val('');
+                    socket.emit(Constants.chat.UPDATE_CHAT, message);
+                });
+
+                $('#data').keypress(function(e) {
+                    if(e.which == 13) {
+                        $(this).blur();
+                        $('#datasend').focus().click();
+                    }
+                });
+            });
+
+        </script>
+    </head>
+    <body>
+        <div style="float:left;width:100px;border-right:1px solid black;height:300px;padding:10px;overflow:scroll-y;">
+          <b>Usu&aacute;rios logados</b>
+          <div id="users"></div>
+        </div>
+
+        <div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
+          <div id="conversation"></div>
+          <input id="data" style="width:200px;" />
+          <input type="button" id="datasend" value="send" />
+        </div>
+</body>
+</html>
